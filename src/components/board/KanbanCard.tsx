@@ -1,19 +1,40 @@
 'use client';
 
+import type { DragEvent } from 'react';
 import { CLIENT_BY_ID, USERS, type MockCard } from '@/lib/mock-data';
 import { Avatar } from '@/components/ui/Avatar';
 import { Icon } from '@/components/ui/Icon';
-import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
+import { VideoThumb } from '@/components/ui/VideoThumb';
 
-export function KanbanCard({ card, onOpen }: { card: MockCard; onOpen: (card: MockCard) => void }) {
+type Props = {
+  card: MockCard;
+  onOpen: (card: MockCard) => void;
+  dragging: boolean;
+  onDragStart: (id: string) => void;
+  onDragEnd: () => void;
+};
+
+export function KanbanCard({ card, onOpen, dragging, onDragStart, onDragEnd }: Props) {
   const client = CLIENT_BY_ID[card.client];
   const assignee = card.assignee ? USERS[card.assignee] : null;
 
+  const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData('text/plain', card.id);
+    e.dataTransfer.effectAllowed = 'move';
+    onDragStart(card.id);
+  };
+
   return (
-    <div className="kcard" onClick={() => onOpen(card)}>
+    <div
+      className={`kcard${dragging ? ' dragging' : ''}`}
+      draggable
+      onClick={() => onOpen(card)}
+      onDragStart={handleDragStart}
+      onDragEnd={onDragEnd}
+    >
       <span className="stripe" style={{ background: client?.stripe ?? '#444' }} />
       {card.unread && <span className="unread" />}
-      <VideoPlaceholder width={44} height={78} meta={[card.length || '—', card.format]} style={{ borderRadius: 3 }} />
+      <VideoThumb seed={card.id} clientColor={client?.stripe} width={46} height={82} format={card.format} rounded={4} />
       <div className="body">
         <div className="client" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span>{client?.name}</span>

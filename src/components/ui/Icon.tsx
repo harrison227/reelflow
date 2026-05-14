@@ -5,7 +5,8 @@ export type IconName =
   | 'record' | 'mic' | 'monitor' | 'video' | 'file' | 'download' | 'upload' | 'arrow-r'
   | 'chev-r' | 'chev-d' | 'x' | 'more' | 'clock' | 'calendar' | 'paperclip' | 'link'
   | 'eye' | 'send' | 'comment' | 'lightning' | 'filter' | 'logo' | 'sort' | 'globe'
-  | 'bolt-line' | 'home' | 'queue' | 'cmd' | 'back' | 'at' | 'bell' | 'edit' | 'spark';
+  | 'bolt-line' | 'home' | 'queue' | 'cmd' | 'back' | 'at' | 'bell' | 'edit' | 'spark'
+  | 'sun' | 'moon' | 'grip';
 
 type Props = {
   name: IconName;
@@ -62,6 +63,9 @@ export function Icon({ name, size = 16, color = 'currentColor', style = {} }: Pr
     case 'bell': return <svg viewBox="0 0 16 16" style={wrap}><path d="M4 11V7.5a4 4 0 118 0V11l1 2H3l1-2zM6.5 13.5a1.5 1.5 0 003 0" {...stroke} /></svg>;
     case 'edit': return <svg viewBox="0 0 16 16" style={wrap}><path d="M9.5 3.5l3 3-7 7H2.5v-3l7-7z" {...stroke} /></svg>;
     case 'spark': return <svg viewBox="0 0 16 16" style={wrap}><path d="M8 2v3M8 11v3M2 8h3M11 8h3M4 4l2 2M10 10l2 2M4 12l2-2M10 6l2-2" {...stroke} /></svg>;
+    case 'sun': return <svg viewBox="0 0 16 16" style={wrap}><circle cx="8" cy="8" r="3.2" {...stroke} /><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.7 3.3l-1.1 1.1M4.4 11.6l-1.1 1.1M12.7 12.7l-1.1-1.1M4.4 4.4L3.3 3.3" {...stroke} /></svg>;
+    case 'moon': return <svg viewBox="0 0 16 16" style={wrap}><path d="M13.8 9.6A5.8 5.8 0 016.4 2.2 5.8 5.8 0 1013.8 9.6z" {...stroke} /></svg>;
+    case 'grip': return <svg viewBox="0 0 16 16" style={wrap}><circle cx="6" cy="4" r="1" {...fill} /><circle cx="10" cy="4" r="1" {...fill} /><circle cx="6" cy="8" r="1" {...fill} /><circle cx="10" cy="8" r="1" {...fill} /><circle cx="6" cy="12" r="1" {...fill} /><circle cx="10" cy="12" r="1" {...fill} /></svg>;
     default: return <svg viewBox="0 0 16 16" style={wrap}><rect x="3" y="3" width="10" height="10" {...stroke} /></svg>;
   }
 }

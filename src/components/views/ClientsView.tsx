@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { CARDS, CLIENTS } from '@/lib/mock-data';
+import { Icon } from '@/components/ui/Icon';
 
 export function ClientsView() {
   return (
@@ -23,13 +24,14 @@ export function ClientsView() {
           }}
         >
           {CLIENTS.map((c) => (
-            <Link key={c.id} href={`/clients/${c.id}`} className="card" style={{ padding: 16, cursor: 'pointer', display: 'block' }}>
+            <Link key={c.id} href={`/?scope=${c.id}`} className="card" style={{ padding: 16, cursor: 'pointer', display: 'block' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ width: 4, height: 22, background: c.stripe, borderRadius: 1 }} />
                 <span style={{ fontSize: 14, color: 'var(--fg)', fontWeight: 500 }}>{c.name}</span>
                 <span style={{ flex: 1 }} />
-                <span className="mono" style={{ fontSize: 10, color: 'var(--fg-faint)' }}>
+                <span className="mono" style={{ fontSize: 10, color: 'var(--fg-faint)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                   {c.active} active
+                  <Icon name="arrow-r" size={11} />
                 </span>
               </div>
               <div style={{ color: 'var(--fg-mute)', fontSize: 12, marginTop: 4, marginLeft: 14 }}>{c.sector}</div>

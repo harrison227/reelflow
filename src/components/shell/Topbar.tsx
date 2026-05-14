@@ -6,6 +6,7 @@ import { useUIState } from '@/components/ui-state';
 import { Icon } from '@/components/ui/Icon';
 import { Kbd } from '@/components/ui/Kbd';
 import { NOTIFICATIONS } from '@/lib/mock-data';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Topbar({ crumb }: { crumb: ReactNode }) {
   const { setPaletteOpen } = useUIState();
@@ -23,6 +24,7 @@ export function Topbar({ crumb }: { crumb: ReactNode }) {
           <Kbd>K</Kbd>
         </span>
       </button>
+      <ThemeToggle />
       <Link href="/inbox" className="btn ghost" title="Inbox">
         <Icon name="bell" size={13} />
         {unread > 0 && (

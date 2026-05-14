@@ -20,15 +20,6 @@ function CrumbInner() {
     );
   }
   if (pathname.startsWith('/inbox')) return <b>Inbox</b>;
-  if (pathname.startsWith('/clients/')) {
-    const id = pathname.split('/')[2];
-    const c = id ? CLIENT_BY_ID[id] : null;
-    return (
-      <>
-        Clients <span style={{ margin: '0 6px', color: 'var(--fg-faint)' }}>/</span> <b>{c?.name ?? 'Client'}</b>
-      </>
-    );
-  }
   if (pathname.startsWith('/clients')) return <b>Clients</b>;
   if (pathname.startsWith('/settings')) return <b>Settings</b>;
   return null;

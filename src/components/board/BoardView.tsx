@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CARDS, CLIENTS, CLIENT_BY_ID, COLUMNS } from '@/lib/mock-data';
+import { CLIENTS, CLIENT_BY_ID, COLUMNS } from '@/lib/mock-data';
 import { Icon } from '@/components/ui/Icon';
 import { useUIState } from '@/components/ui-state';
 import { KanbanColumn } from './KanbanColumn';
@@ -19,10 +19,11 @@ export function BoardView() {
   const router = useRouter();
   const params = useSearchParams();
   const scope = (params.get('scope') as Scope | null) ?? 'all';
-  const { setOpenCardId } = useUIState();
+  const { cards, moveCard, setOpenCardId } = useUIState();
   const [scopeOpen, setScopeOpen] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
-  const cards = CARDS.filter((c) => {
+  const visibleCards = cards.filter((c) => {
     if (scope === 'all') return true;
     if (scope === 'mine') return c.assignee === 'jules' || c.assignee === 'maya';
     return c.client === scope;
@@ -106,7 +107,7 @@ export function BoardView() {
         <div style={{ flex: 1 }} />
 
         <div className="mono" style={{ color: 'var(--fg-faint)', fontSize: 11 }}>
-          {cards.length} cards · {cards.filter((c) => c.unread).length} unread
+          {visibleCards.length} cards · {visibleCards.filter((c) => c.unread).length} unread
         </div>
 
         <button type="button" className="btn">
@@ -116,7 +117,16 @@ export function BoardView() {
 
       <div className="kanban">
         {COLUMNS.map((col) => (
-          <KanbanColumn key={col.id} column={col} cards={cards} onOpenCard={(card) => setOpenCardId(card.id)} />
+          <KanbanColumn
+            key={col.id}
+            column={col}
+            cards={visibleCards}
+            onOpenCard={(card) => setOpenCardId(card.id)}
+            onCardDrop={(cardId, columnId) => moveCard(cardId, columnId)}
+            draggingId={draggingId}
+            onDragStart={setDraggingId}
+            onDragEnd={() => setDraggingId(null)}
+          />
         ))}
       </div>
     </div>

@@ -8,9 +8,15 @@ export const metadata = {
   description: 'Video delivery management for a small video agency',
 };
 
+// Set the saved theme before first paint so there's no flash of the wrong mode.
+const themeScript = `(function(){try{var t=localStorage.getItem('reelflow.theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>{children}</body>
     </html>
   );
