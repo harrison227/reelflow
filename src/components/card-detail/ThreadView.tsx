@@ -11,9 +11,10 @@ import { LoomCard } from './LoomCard';
 type Props = {
   thread: ThreadItem[];
   onOpenReview: () => void;
+  onAttach: () => void;
 };
 
-export function ThreadView({ thread, onOpenReview }: Props) {
+export function ThreadView({ thread, onOpenReview, onAttach }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {thread.map((t) => (
@@ -26,7 +27,9 @@ export function ThreadView({ thread, onOpenReview }: Props) {
         style={{ fontFamily: 'var(--sans)' }}
       />
       <div style={{ display: 'flex', gap: 6 }}>
-        <Button icon="paperclip">Attach</Button>
+        <Button icon="paperclip" onClick={onAttach}>
+          Attach
+        </Button>
         <Button icon="at">Mention</Button>
         <span style={{ flex: 1 }} />
         <Button variant="record" icon="record" onClick={onOpenReview}>

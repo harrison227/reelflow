@@ -4,6 +4,9 @@ import type { FocusFiles, FileEntry } from '@/lib/mock-data';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { SectionLabel } from '@/components/ui/SectionLabel';
+import { useUIState } from '@/components/ui-state';
+import { AttachZone } from './AttachZone';
+import { AttachmentItem } from './AttachmentItem';
 
 function iconForFile(name: string): 'mic' | 'file' | 'video' {
   if (name.toLowerCase().endsWith('.wav')) return 'mic';
@@ -60,9 +63,31 @@ function Group({ title, items }: { title: string; items: FileEntry[] }) {
   );
 }
 
-export function FilesView({ files }: { files: FocusFiles }) {
+export function FilesView({ cardId, files }: { cardId: string; files: FocusFiles }) {
+  const { attachments } = useUIState();
+  const cardAttachments = attachments[cardId] ?? [];
+
   return (
     <div>
+      <AttachZone cardId={cardId} />
+
+      {cardAttachments.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <SectionLabel
+            right={
+              <span className="mono" style={{ fontSize: 10, color: 'var(--fg-faint)' }}>
+                {cardAttachments.length} attached
+              </span>
+            }
+          >
+            Attached
+          </SectionLabel>
+          {cardAttachments.map((a) => (
+            <AttachmentItem key={a.id} cardId={cardId} attachment={a} />
+          ))}
+        </div>
+      )}
+
       <Group title="Work-in-progress" items={files.wips} />
       <Group title="Raw footage" items={files.raw} />
       <Group title="References" items={files.refs} />

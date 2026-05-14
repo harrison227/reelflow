@@ -8,6 +8,7 @@ import { Icon } from '@/components/ui/Icon';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
+import { useUIState } from '@/components/ui-state';
 import { ThreadView } from './ThreadView';
 import { BriefView } from './BriefView';
 import { FilesView } from './FilesView';
@@ -32,6 +33,7 @@ function SidebarRow({ label, children }: { label: string; children: ReactNode })
 
 export function CardDetailDrawer({ card, onClose, onOpenReview }: Props) {
   const [tab, setTab] = useState<Tab>('thread');
+  const { attachments } = useUIState();
   const client = CLIENT_BY_ID[card.client];
   const assignee = card.assignee ? USERS[card.assignee] : null;
   const isFocus = card.id === FOCUS_CARD_ID;
@@ -39,6 +41,8 @@ export function CardDetailDrawer({ card, onClose, onOpenReview }: Props) {
   const files = isFocus ? FOCUS_FILES : { raw: [], wips: [], refs: [] };
   const activity = isFocus ? FOCUS_ACTIVITY : [];
   const latestWip = files.wips[0];
+  const fileCount =
+    files.raw.length + files.wips.length + files.refs.length + (attachments[card.id]?.length ?? 0);
 
   return (
     <div className="drawer" onClick={(e) => e.stopPropagation()}>
@@ -139,15 +143,17 @@ export function CardDetailDrawer({ card, onClose, onOpenReview }: Props) {
               >
                 {t === 'thread' && 'Revision thread'}
                 {t === 'brief' && 'Brief'}
-                {t === 'files' && `Files (${files.raw.length + files.wips.length + files.refs.length})`}
+                {t === 'files' && `Files (${fileCount})`}
                 {t === 'activity' && 'Activity'}
               </button>
             ))}
           </div>
 
-          {tab === 'thread' && <ThreadView thread={thread} onOpenReview={onOpenReview} />}
+          {tab === 'thread' && (
+            <ThreadView thread={thread} onOpenReview={onOpenReview} onAttach={() => setTab('files')} />
+          )}
           {tab === 'brief' && <BriefView card={card} />}
-          {tab === 'files' && <FilesView files={files} />}
+          {tab === 'files' && <FilesView cardId={card.id} files={files} />}
           {tab === 'activity' && <ActivityView activity={activity} />}
         </div>
 

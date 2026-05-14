@@ -237,6 +237,15 @@ textarea.input { resize: vertical; min-height: 60px; font-family: var(--sans); l
 
 .section-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-faint); margin: 0 0 8px; }
 
+/* Attachment zone + items */
+.attach-zone { border: 1.5px dashed var(--line-strong); border-radius: 10px; padding: 14px; background: var(--panel); transition: border-color 0.12s, background 0.12s; }
+.attach-zone.dragover { border-color: var(--fg-mute); background: var(--hover); }
+.attach-embed { width: 100%; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #000; line-height: 0; }
+.attach-embed iframe { display: block; width: 100%; border: 0; }
+.attach-card { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--line-subtle); border-radius: 8px; background: var(--panel); }
+.attach-card:hover { border-color: var(--line); }
+.attach-badge { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--line); color: var(--fg-dim); white-space: nowrap; flex: none; }
+
 .act { display: flex; gap: 10px; padding: 8px 0; font-size: 12px; color: var(--fg-dim); }
 .act .when { color: var(--fg-faint); font-family: var(--mono); font-size: 10px; min-width: 64px; }
 

@@ -11,8 +11,10 @@ import {
 } from 'react';
 import type { ClientId, ColumnId, MockCard, UserId } from '@/lib/mock-data';
 import { CARDS } from '@/lib/mock-data';
+import type { LinkProvider } from '@/lib/parse-link';
 
-const STORAGE_KEY = 'reelflow.board.v2';
+const BOARD_KEY = 'reelflow.board.v2';
+const ATTACH_KEY = 'reelflow.attachments.v1';
 
 export type NewCardInput = {
   title: string;
@@ -23,6 +25,22 @@ export type NewCardInput = {
   format: string;
 };
 
+export type Attachment = {
+  id: string;
+  kind: 'link' | 'file';
+  label: string;
+  addedAt: number;
+  // link attachments
+  provider?: LinkProvider;
+  url?: string;
+  embedUrl?: string | null;
+  // file attachments
+  fileName?: string;
+  fileSize?: number;
+};
+
+type AttachmentMap = Record<string, Attachment[]>;
+
 type UIState = {
   cards: MockCard[];
   moveCard: (cardId: string, toColumn: ColumnId) => void;
@@ -30,6 +48,9 @@ type UIState = {
   newCardColumn: ColumnId | null;
   openNewCard: (column?: ColumnId) => void;
   closeNewCard: () => void;
+  attachments: AttachmentMap;
+  addAttachment: (cardId: string, input: Omit<Attachment, 'id' | 'addedAt'>) => void;
+  removeAttachment: (cardId: string, attachmentId: string) => void;
   openCardId: string | null;
   reviewCardId: string | null;
   paletteOpen: boolean;
@@ -43,9 +64,17 @@ type UIState = {
 
 const UIStateContext = createContext<UIState | null>(null);
 
-function persist(cards: MockCard[]) {
+function persistBoard(cards: MockCard[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    localStorage.setItem(BOARD_KEY, JSON.stringify(cards));
+  } catch {
+    /* localStorage unavailable — fall back to in-memory only */
+  }
+}
+
+function persistAttachments(map: AttachmentMap) {
+  try {
+    localStorage.setItem(ATTACH_KEY, JSON.stringify(map));
   } catch {
     /* localStorage unavailable — fall back to in-memory only */
   }
@@ -53,18 +82,29 @@ function persist(cards: MockCard[]) {
 
 export function UIStateProvider({ children }: { children: ReactNode }) {
   const [cards, setCards] = useState<MockCard[]>(CARDS);
+  const [attachments, setAttachments] = useState<AttachmentMap>({});
   const [newCardColumn, setNewCardColumn] = useState<ColumnId | null>(null);
   const [openCardId, setOpenCardIdState] = useState<string | null>(null);
   const [reviewCardId, setReviewCardIdState] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpenState] = useState(false);
 
-  // Restore the saved board (column moves + any cards added previously) after mount.
+  // Restore the saved board + attachments from a previous session after mount.
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const saved = JSON.parse(raw) as MockCard[];
-      if (Array.isArray(saved) && saved.length > 0) setCards(saved);
+      const rawBoard = localStorage.getItem(BOARD_KEY);
+      if (rawBoard) {
+        const saved = JSON.parse(rawBoard) as MockCard[];
+        if (Array.isArray(saved) && saved.length > 0) setCards(saved);
+      }
+    } catch {
+      /* ignore malformed storage */
+    }
+    try {
+      const rawAttach = localStorage.getItem(ATTACH_KEY);
+      if (rawAttach) {
+        const saved = JSON.parse(rawAttach) as AttachmentMap;
+        if (saved && typeof saved === 'object') setAttachments(saved);
+      }
     } catch {
       /* ignore malformed storage */
     }
@@ -75,7 +115,7 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
       const card = prev.find((c) => c.id === cardId);
       if (!card || card.column === toColumn) return prev;
       const next = prev.map((c) => (c.id === cardId ? { ...c, column: toColumn } : c));
-      persist(next);
+      persistBoard(next);
       return next;
     });
   }, []);
@@ -105,7 +145,30 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
         deliverables: [],
       };
       const next = [...prev, card];
-      persist(next);
+      persistBoard(next);
+      return next;
+    });
+  }, []);
+
+  const addAttachment = useCallback((cardId: string, input: Omit<Attachment, 'id' | 'addedAt'>) => {
+    setAttachments((prev) => {
+      const attachment: Attachment = {
+        ...input,
+        id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        addedAt: Date.now(),
+      };
+      const next = { ...prev, [cardId]: [...(prev[cardId] ?? []), attachment] };
+      persistAttachments(next);
+      return next;
+    });
+  }, []);
+
+  const removeAttachment = useCallback((cardId: string, attachmentId: string) => {
+    setAttachments((prev) => {
+      const list = prev[cardId];
+      if (!list) return prev;
+      const next = { ...prev, [cardId]: list.filter((a) => a.id !== attachmentId) };
+      persistAttachments(next);
       return next;
     });
   }, []);
@@ -145,6 +208,9 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
     newCardColumn,
     openNewCard,
     closeNewCard,
+    attachments,
+    addAttachment,
+    removeAttachment,
     openCardId,
     reviewCardId,
     paletteOpen,
