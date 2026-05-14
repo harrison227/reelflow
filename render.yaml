@@ -1,6 +1,6 @@
 databases:
   - name: reelflow-db
-    plan: free
+    plan: basic-256mb
     region: oregon
     databaseName: reelflow
     user: reelflow
