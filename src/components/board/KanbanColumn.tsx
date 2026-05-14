@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type DragEvent } from 'react';
+import type { DragEvent } from 'react';
 import type { Column, ColumnId, MockCard } from '@/lib/mock-data';
 import { Icon } from '@/components/ui/Icon';
 import { KanbanCard } from './KanbanCard';
@@ -10,6 +10,9 @@ type Props = {
   cards: MockCard[];
   onOpenCard: (card: MockCard) => void;
   onCardDrop: (cardId: string, columnId: ColumnId) => void;
+  onAddCard: () => void;
+  isOver: boolean;
+  onDragOverColumn: (columnId: ColumnId) => void;
   draggingId: string | null;
   onDragStart: (id: string) => void;
   onDragEnd: () => void;
@@ -20,34 +23,25 @@ export function KanbanColumn({
   cards,
   onOpenCard,
   onCardDrop,
+  onAddCard,
+  isOver,
+  onDragOverColumn,
   draggingId,
   onDragStart,
   onDragEnd,
 }: Props) {
   const visible = cards.filter((c) => c.column === column.id);
-  const [isOver, setIsOver] = useState(false);
-  const enterCount = useRef(0);
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    // Only signal up when the hovered column actually changes — avoids a
+    // setState on every dragover tick.
+    if (!isOver) onDragOverColumn(column.id);
   };
-  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    enterCount.current += 1;
-    setIsOver(true);
-  };
-  const handleDragLeave = () => {
-    enterCount.current -= 1;
-    if (enterCount.current <= 0) {
-      enterCount.current = 0;
-      setIsOver(false);
-    }
-  };
+
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    enterCount.current = 0;
-    setIsOver(false);
     const id = e.dataTransfer.getData('text/plain');
     if (id) onCardDrop(id, column.id);
   };
@@ -58,15 +52,13 @@ export function KanbanColumn({
         <span>{column.name}</span>
         <span className="count">{visible.length}</span>
         <span style={{ flex: 1 }} />
-        <button type="button" className="btn ghost sm" title="Add card">
+        <button type="button" className="btn ghost sm" title={`Add a card to ${column.name}`} onClick={onAddCard}>
           <Icon name="plus" size={12} />
         </button>
       </div>
       <div
-        className={`column-cards${isOver ? ' drop-over' : ''}`}
+        className={`column-cards${isOver && draggingId ? ' drop-over' : ''}`}
         onDragOver={handleDragOver}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
         {visible.length === 0 ? (

@@ -9,15 +9,27 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type { ColumnId, MockCard } from '@/lib/mock-data';
-import { CARDS, COLUMNS } from '@/lib/mock-data';
+import type { ClientId, ColumnId, MockCard, UserId } from '@/lib/mock-data';
+import { CARDS } from '@/lib/mock-data';
 
-const STORAGE_KEY = 'reelflow.board.v1';
-const VALID_COLUMNS = new Set<string>(COLUMNS.map((c) => c.id));
+const STORAGE_KEY = 'reelflow.board.v2';
+
+export type NewCardInput = {
+  title: string;
+  client: ClientId;
+  column: ColumnId;
+  assignee: UserId | null;
+  due: string;
+  format: string;
+};
 
 type UIState = {
   cards: MockCard[];
   moveCard: (cardId: string, toColumn: ColumnId) => void;
+  addCard: (input: NewCardInput) => void;
+  newCardColumn: ColumnId | null;
+  openNewCard: (column?: ColumnId) => void;
+  closeNewCard: () => void;
   openCardId: string | null;
   reviewCardId: string | null;
   paletteOpen: boolean;
@@ -31,10 +43,9 @@ type UIState = {
 
 const UIStateContext = createContext<UIState | null>(null);
 
-function persistColumns(cards: MockCard[]) {
+function persist(cards: MockCard[]) {
   try {
-    const payload = cards.map((c) => ({ id: c.id, column: c.column }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
   } catch {
     /* localStorage unavailable — fall back to in-memory only */
   }
@@ -42,23 +53,18 @@ function persistColumns(cards: MockCard[]) {
 
 export function UIStateProvider({ children }: { children: ReactNode }) {
   const [cards, setCards] = useState<MockCard[]>(CARDS);
+  const [newCardColumn, setNewCardColumn] = useState<ColumnId | null>(null);
   const [openCardId, setOpenCardIdState] = useState<string | null>(null);
   const [reviewCardId, setReviewCardIdState] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpenState] = useState(false);
 
-  // Restore saved column positions from a previous session after mount.
+  // Restore the saved board (column moves + any cards added previously) after mount.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
-      const saved = JSON.parse(raw) as Array<{ id: string; column: string }>;
-      const byId = new Map(saved.map((s) => [s.id, s.column]));
-      setCards((prev) =>
-        prev.map((c) => {
-          const col = byId.get(c.id);
-          return col && VALID_COLUMNS.has(col) ? { ...c, column: col as ColumnId } : c;
-        }),
-      );
+      const saved = JSON.parse(raw) as MockCard[];
+      if (Array.isArray(saved) && saved.length > 0) setCards(saved);
     } catch {
       /* ignore malformed storage */
     }
@@ -69,11 +75,43 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
       const card = prev.find((c) => c.id === cardId);
       if (!card || card.column === toColumn) return prev;
       const next = prev.map((c) => (c.id === cardId ? { ...c, column: toColumn } : c));
-      persistColumns(next);
+      persist(next);
       return next;
     });
   }, []);
 
+  const addCard = useCallback((input: NewCardInput) => {
+    setCards((prev) => {
+      const maxNum = prev.reduce((m, c) => {
+        const n = Number.parseInt(c.id.replace(/\D/g, ''), 10);
+        return Number.isFinite(n) && n > m ? n : m;
+      }, 240);
+      const card: MockCard = {
+        id: `V-${maxNum + 1}`,
+        title: input.title,
+        client: input.client,
+        column: input.column,
+        assignee: input.assignee,
+        length: '—',
+        format: input.format,
+        due: input.due || 'TBD',
+        updated: 'just now',
+        updatedBy: 'maya',
+        unread: false,
+        versions: 0,
+        comments: 0,
+        files: 0,
+        brief: '',
+        deliverables: [],
+      };
+      const next = [...prev, card];
+      persist(next);
+      return next;
+    });
+  }, []);
+
+  const openNewCard = useCallback((column: ColumnId = 'brief') => setNewCardColumn(column), []);
+  const closeNewCard = useCallback(() => setNewCardColumn(null), []);
   const setOpenCardId = useCallback((id: string | null) => setOpenCardIdState(id), []);
   const setReviewCardId = useCallback((id: string | null) => setReviewCardIdState(id), []);
   const setPaletteOpen = useCallback((open: boolean) => setPaletteOpenState(open), []);
@@ -88,13 +126,14 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
       }
       if (e.key === 'Escape') {
         if (paletteOpen) setPaletteOpenState(false);
+        else if (newCardColumn) setNewCardColumn(null);
         else if (reviewCardId) setReviewCardIdState(null);
         else if (openCardId) setOpenCardIdState(null);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [paletteOpen, reviewCardId, openCardId, togglePalette]);
+  }, [paletteOpen, newCardColumn, reviewCardId, openCardId, togglePalette]);
 
   const openCard = useMemo(() => cards.find((c) => c.id === openCardId) ?? null, [cards, openCardId]);
   const reviewCard = useMemo(() => cards.find((c) => c.id === reviewCardId) ?? null, [cards, reviewCardId]);
@@ -102,6 +141,10 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
   const value: UIState = {
     cards,
     moveCard,
+    addCard,
+    newCardColumn,
+    openNewCard,
+    closeNewCard,
     openCardId,
     reviewCardId,
     paletteOpen,

@@ -7,9 +7,11 @@ import { UIStateProvider, useUIState } from '@/components/ui-state';
 import { CardDetailDrawer } from '@/components/card-detail/CardDetailDrawer';
 import { WIPReview } from '@/components/review/WIPReview';
 import { CommandPalette } from '@/components/views/CommandPalette';
+import { NewCardModal } from '@/components/board/NewCardModal';
 
 function GlobalOverlays() {
-  const { openCard, reviewCard, paletteOpen, setOpenCardId, setReviewCardId, setPaletteOpen } = useUIState();
+  const { openCard, reviewCard, paletteOpen, newCardColumn, setOpenCardId, setReviewCardId, setPaletteOpen } =
+    useUIState();
 
   return (
     <>
@@ -26,10 +28,9 @@ function GlobalOverlays() {
           />
         </>
       )}
-      {reviewCard && (
-        <WIPReview card={reviewCard} onClose={() => setReviewCardId(null)} />
-      )}
+      {reviewCard && <WIPReview card={reviewCard} onClose={() => setReviewCardId(null)} />}
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
+      {newCardColumn && <NewCardModal />}
     </>
   );
 }

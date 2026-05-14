@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CLIENTS, CLIENT_BY_ID, COLUMNS } from '@/lib/mock-data';
+import { CLIENTS, CLIENT_BY_ID, COLUMNS, type ColumnId } from '@/lib/mock-data';
 import { Icon } from '@/components/ui/Icon';
 import { useUIState } from '@/components/ui-state';
 import { KanbanColumn } from './KanbanColumn';
@@ -19,9 +19,26 @@ export function BoardView() {
   const router = useRouter();
   const params = useSearchParams();
   const scope = (params.get('scope') as Scope | null) ?? 'all';
-  const { cards, moveCard, setOpenCardId } = useUIState();
+  const { cards, moveCard, setOpenCardId, openNewCard } = useUIState();
   const [scopeOpen, setScopeOpen] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [overColumnId, setOverColumnId] = useState<ColumnId | null>(null);
+
+  // Catch-all drag cleanup. Native HTML5 DnD drops the source node when
+  // React moves the card to its new column, which can swallow the card's
+  // own dragend — a window listener always fires, so drag state never sticks.
+  useEffect(() => {
+    const clear = () => {
+      setDraggingId(null);
+      setOverColumnId(null);
+    };
+    window.addEventListener('dragend', clear);
+    window.addEventListener('drop', clear);
+    return () => {
+      window.removeEventListener('dragend', clear);
+      window.removeEventListener('drop', clear);
+    };
+  }, []);
 
   const visibleCards = cards.filter((c) => {
     if (scope === 'all') return true;
@@ -30,6 +47,15 @@ export function BoardView() {
   });
 
   const currentScope = scopeOptions.find((o) => o.id === scope) ?? scopeOptions[0]!;
+
+  const handleDrop = (cardId: string, columnId: ColumnId) => {
+    // Clear drag state immediately so the card snaps back to normal, then
+    // defer the actual move one tick so the browser's dragend fires on the
+    // still-mounted source card before React relocates it.
+    setDraggingId(null);
+    setOverColumnId(null);
+    setTimeout(() => moveCard(cardId, columnId), 0);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -110,7 +136,7 @@ export function BoardView() {
           {visibleCards.length} cards · {visibleCards.filter((c) => c.unread).length} unread
         </div>
 
-        <button type="button" className="btn">
+        <button type="button" className="btn" onClick={() => openNewCard()}>
           <Icon name="plus" size={12} /> New card
         </button>
       </div>
@@ -122,10 +148,16 @@ export function BoardView() {
             column={col}
             cards={visibleCards}
             onOpenCard={(card) => setOpenCardId(card.id)}
-            onCardDrop={(cardId, columnId) => moveCard(cardId, columnId)}
+            onCardDrop={handleDrop}
+            onAddCard={() => openNewCard(col.id)}
+            isOver={overColumnId === col.id}
+            onDragOverColumn={setOverColumnId}
             draggingId={draggingId}
             onDragStart={setDraggingId}
-            onDragEnd={() => setDraggingId(null)}
+            onDragEnd={() => {
+              setDraggingId(null);
+              setOverColumnId(null);
+            }}
           />
         ))}
       </div>
