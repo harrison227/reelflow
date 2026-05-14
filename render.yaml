@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: reelflow
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        value: postgres://placeholder:placeholder@localhost:5432/placeholder
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: AUTH_URL
+        value: https://reelflow.onrender.com
+      - key: EMAIL_FROM
+        value: noreply@reelflow.studio
+      - key: B2_ENDPOINT
+        value: https://s3.us-west-002.backblazeb2.com
+      - key: B2_REGION
+        value: us-west-002
+      - key: B2_BUCKET
+        value: placeholder
+      - key: B2_ACCESS_KEY_ID
+        value: placeholder
+      - key: B2_SECRET_ACCESS_KEY
+        value: placeholder
+      - key: ALLOWED_EMAILS
+        value: ""
+      - key: LOG_LEVEL
+        value: warn
