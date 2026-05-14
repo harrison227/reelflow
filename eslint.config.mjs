@@ -5,7 +5,7 @@ import boundaries from 'eslint-plugin-boundaries';
 
 export default tseslint.config(
   {
-    ignores: ['.next/**', 'node_modules/**', 'src/lib/db/migrations/**', 'dist/**', 'coverage/**'],
+    ignores: ['.next/**', 'node_modules/**', 'src/lib/db/migrations/**', 'dist/**', 'coverage/**', 'next-env.d.ts'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

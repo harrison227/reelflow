@@ -26,7 +26,6 @@ const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   const flat = parsed.error.flatten().fieldErrors;
-  // eslint-disable-next-line no-console
   console.error('Invalid environment variables:', JSON.stringify(flat, null, 2));
   throw new Error('Invalid environment variables. See errors above.');
 }

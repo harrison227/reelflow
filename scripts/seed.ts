@@ -22,13 +22,11 @@ async function seed() {
     ])
     .onConflictDoNothing();
 
-  // eslint-disable-next-line no-console
   console.log('Seeded users and clients.');
   process.exit(0);
 }
 
 seed().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });
