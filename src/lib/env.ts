@@ -6,7 +6,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
 
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters'),
-  AUTH_URL: z.string().url(),
+  SITE_PASSWORD: z.string().min(1, 'SITE_PASSWORD is required'),
 
   B2_ENDPOINT: z.string().url(),
   B2_REGION: z.string().default('auto'),

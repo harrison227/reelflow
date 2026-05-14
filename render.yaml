@@ -25,8 +25,8 @@ services:
           property: connectionString
       - key: AUTH_SECRET
         generateValue: true
-      - key: AUTH_URL
-        value: https://reelflow-8uok.onrender.com
+      - key: SITE_PASSWORD
+        sync: false
       - key: B2_ENDPOINT
         value: https://s3.us-west-002.backblazeb2.com
       - key: B2_REGION

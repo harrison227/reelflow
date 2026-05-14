@@ -14,7 +14,7 @@ export async function setup() {
   process.env.NODE_ENV = 'test';
   process.env.DATABASE_URL = uri;
   process.env.AUTH_SECRET = 'test-secret-must-be-at-least-32-characters-long';
-  process.env.AUTH_URL = 'http://localhost:3000';
+  process.env.SITE_PASSWORD = 'test-shared-password';
   process.env.EMAIL_FROM = 'test@example.com';
   process.env.B2_ENDPOINT = 'http://localhost:9000';
   process.env.B2_REGION = 'auto';

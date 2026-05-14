@@ -3,15 +3,8 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { CARDS, CLIENTS, NOTIFICATIONS } from '@/lib/mock-data';
-import type { Role } from '@/lib/auth/permissions';
 import { signOutAction } from '@/app/auth-actions';
 import { Icon } from '@/components/ui/Icon';
-
-export type SidebarUser = {
-  name: string;
-  email: string;
-  role: Role;
-};
 
 const NAV = [
   { id: 'board', href: '/', icon: 'kanban' as const, label: 'Board' },
@@ -25,19 +18,7 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href);
 }
 
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
-}
-
-function roleLabel(role: Role): string {
-  if (role === 'va') return 'Virtual Assistant';
-  return role === 'owner' ? 'Owner' : 'Editor';
-}
-
-export function Sidebar({ user }: { user: SidebarUser }) {
+export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const unreadCount = NOTIFICATIONS.filter((n) => n.unread).length;
@@ -103,22 +84,9 @@ export function Sidebar({ user }: { user: SidebarUser }) {
           borderTop: '1px solid var(--line-subtle)',
         }}
       >
-        <span className="avatar sm" title={user.email}>
-          {initialsOf(user.name)}
-        </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 12,
-              color: 'var(--fg)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {user.name}
-          </div>
-          <div style={{ fontSize: 10, color: 'var(--fg-mute)' }}>{roleLabel(user.role)}</div>
+          <div style={{ fontSize: 12, color: 'var(--fg)' }}>Reelflow</div>
+          <div style={{ fontSize: 10, color: 'var(--fg-mute)' }}>Shared workspace</div>
         </div>
         <form action={signOutAction}>
           <button type="submit" className="btn ghost sm" title="Sign out">
