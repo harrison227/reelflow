@@ -15,6 +15,62 @@ type Item =
   | { kind: 'user'; group: string; user: MockUser }
   | { kind: 'jump'; group: string; icon: IconName; label: string; target: string };
 
+function ItemRow({ item }: { item: Item }) {
+  if (item.kind === 'card') {
+    const client = CLIENT_BY_ID[item.card.client];
+    const column = COLUMNS.find((c) => c.id === item.card.column);
+    return (
+      <>
+        <span style={{ width: 6, height: 6, borderRadius: 2, background: client?.stripe ?? '#444' }} />
+        <span className="mono" style={{ color: 'var(--fg-faint)', fontSize: 11 }}>
+          {item.card.id}
+        </span>
+        <span style={{ color: 'var(--fg)' }}>{item.card.title}</span>
+        <span className="right">{column?.name}</span>
+      </>
+    );
+  }
+  if (item.kind === 'client') {
+    return (
+      <>
+        <span style={{ width: 6, height: 6, borderRadius: 2, background: item.client.stripe }} />
+        <span style={{ color: 'var(--fg)' }}>{item.client.name}</span>
+        <span className="right">{item.client.active} active</span>
+      </>
+    );
+  }
+  if (item.kind === 'user') {
+    return (
+      <>
+        <Avatar user={item.user} size="sm" />
+        <span style={{ color: 'var(--fg)' }}>{item.user.name}</span>
+        <span className="right" style={{ textTransform: 'capitalize' }}>
+          {item.user.role === 'va' ? 'VA' : item.user.role}
+        </span>
+      </>
+    );
+  }
+  if (item.kind === 'jump') {
+    return (
+      <>
+        <Icon name={item.icon} size={13} style={{ color: 'var(--fg-mute)' }} />
+        <span>{item.label}</span>
+      </>
+    );
+  }
+  return (
+    <>
+      <Icon name={item.icon} size={13} style={{ color: 'var(--fg-mute)' }} />
+      <span style={{ color: 'var(--fg)' }}>{item.label}</span>
+      {item.kbd && (
+        <span className="right">
+          <Kbd>{item.kbd}</Kbd>
+        </span>
+      )}
+    </>
+  );
+}
+
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { setOpenCardId } = useUIState();
@@ -140,56 +196,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
                 onMouseEnter={() => setIdx(g.i)}
                 style={{ width: '100%', textAlign: 'left' }}
               >
-                {g.item.kind === 'card' && (
-                  <>
-                    <span
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: 2,
-                        background: CLIENT_BY_ID[g.item.card.client]?.stripe ?? '#444',
-                      }}
-                    />
-                    <span className="mono" style={{ color: 'var(--fg-faint)', fontSize: 11 }}>
-                      {g.item.card.id}
-                    </span>
-                    <span style={{ color: 'var(--fg)' }}>{g.item.card.title}</span>
-                    <span className="right">{COLUMNS.find((c) => c.id === g.item.card.column)?.name}</span>
-                  </>
-                )}
-                {g.item.kind === 'client' && (
-                  <>
-                    <span style={{ width: 6, height: 6, borderRadius: 2, background: g.item.client.stripe }} />
-                    <span style={{ color: 'var(--fg)' }}>{g.item.client.name}</span>
-                    <span className="right">{g.item.client.active} active</span>
-                  </>
-                )}
-                {g.item.kind === 'user' && (
-                  <>
-                    <Avatar user={g.item.user} size="sm" />
-                    <span style={{ color: 'var(--fg)' }}>{g.item.user.name}</span>
-                    <span className="right" style={{ textTransform: 'capitalize' }}>
-                      {g.item.user.role === 'va' ? 'VA' : g.item.user.role}
-                    </span>
-                  </>
-                )}
-                {g.item.kind === 'jump' && (
-                  <>
-                    <Icon name={g.item.icon} size={13} style={{ color: 'var(--fg-mute)' }} />
-                    <span>{g.item.label}</span>
-                  </>
-                )}
-                {g.item.kind === 'action' && (
-                  <>
-                    <Icon name={g.item.icon} size={13} style={{ color: 'var(--fg-mute)' }} />
-                    <span style={{ color: 'var(--fg)' }}>{g.item.label}</span>
-                    {g.item.kbd && (
-                      <span className="right">
-                        <Kbd>{g.item.kbd}</Kbd>
-                      </span>
-                    )}
-                  </>
-                )}
+                <ItemRow item={g.item} />
               </button>
             ),
           )}

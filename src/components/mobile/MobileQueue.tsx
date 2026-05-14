@@ -1,7 +1,7 @@
 'use client';
 
 import { CARDS, CLIENT_BY_ID, type MockCard } from '@/lib/mock-data';
-import { Icon } from '@/components/ui/Icon';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
 
@@ -90,10 +90,10 @@ export function MobileQueue({ onPick }: { onPick: (card: MockCard) => void }) {
         {(
           [
             { i: 'queue', l: 'Queue', a: true },
-            { i: 'inbox', l: 'Inbox' },
-            { i: 'users', l: 'Clients' },
-            { i: 'cog', l: 'Me' },
-          ] as const
+            { i: 'inbox', l: 'Inbox', a: false },
+            { i: 'users', l: 'Clients', a: false },
+            { i: 'cog', l: 'Me', a: false },
+          ] satisfies Array<{ i: IconName; l: string; a: boolean }>
         ).map((t) => (
           <div key={t.l} style={{ textAlign: 'center', color: t.a ? 'var(--fg)' : 'var(--fg-faint)' }}>
             <Icon name={t.i} size={20} />
