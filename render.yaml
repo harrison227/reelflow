@@ -11,8 +11,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm build
-    preDeployCommand: pnpm db:migrate
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm build && pnpm db:migrate
     startCommand: pnpm start
     autoDeploy: true
     envVars:
