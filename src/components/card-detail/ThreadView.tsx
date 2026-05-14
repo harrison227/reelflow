@@ -6,19 +6,17 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Icon } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/Button';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
-import { LoomCard } from './LoomCard';
 
 type Props = {
   thread: ThreadItem[];
-  onOpenReview: () => void;
   onAttach: () => void;
 };
 
-export function ThreadView({ thread, onOpenReview, onAttach }: Props) {
+export function ThreadView({ thread, onAttach }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {thread.map((t) => (
-        <ThreadItemRow key={t.id} item={t} onOpenReview={onOpenReview} />
+        <ThreadItemRow key={t.id} item={t} />
       ))}
       <div style={{ height: 8 }} />
       <textarea
@@ -32,9 +30,6 @@ export function ThreadView({ thread, onOpenReview, onAttach }: Props) {
         </Button>
         <Button icon="at">Mention</Button>
         <span style={{ flex: 1 }} />
-        <Button variant="record" icon="record" onClick={onOpenReview}>
-          Record over WIP
-        </Button>
         <Button variant="primary" icon="send">
           Send
         </Button>
@@ -43,7 +38,7 @@ export function ThreadView({ thread, onOpenReview, onAttach }: Props) {
   );
 }
 
-function ThreadItemRow({ item, onOpenReview }: { item: ThreadItem; onOpenReview: () => void }) {
+function ThreadItemRow({ item }: { item: ThreadItem }) {
   const u = USERS[item.who];
 
   if (item.kind === 'wip') {
@@ -79,29 +74,8 @@ function ThreadItemRow({ item, onOpenReview }: { item: ThreadItem; onOpenReview:
                 {item.file.size} · {item.file.dur} · uploaded by {USERS[item.file.uploader].short}
               </div>
             </div>
-            <Button icon="play" onClick={onOpenReview}>
-              Watch
-            </Button>
             <Button icon="download" size="sm" variant="ghost" />
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (item.kind === 'feedback') {
-    return (
-      <div style={{ display: 'flex', gap: 12, position: 'relative' }}>
-        <Avatar user={u} size="sm" />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, color: 'var(--fg-dim)' }}>
-            <b style={{ color: 'var(--fg)', fontWeight: 500 }}>{u.short}</b> recorded feedback on{' '}
-            <span className="mono">{item.version}</span>
-            <span style={{ color: 'var(--fg-faint)', marginLeft: 8 }} className="mono">
-              {item.when}
-            </span>
-          </div>
-          <LoomCard loom={item.loom} onPlay={onOpenReview} />
         </div>
       </div>
     );
@@ -138,6 +112,37 @@ function ThreadItemRow({ item, onOpenReview }: { item: ThreadItem; onOpenReview:
     );
   }
 
+  if (item.kind === 'note') {
+    return (
+      <div style={{ display: 'flex', gap: 12 }}>
+        <Avatar user={u} size="sm" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, color: 'var(--fg-dim)' }}>
+            <b style={{ color: 'var(--fg)', fontWeight: 500 }}>{u.short}</b>
+            <span style={{ color: 'var(--fg-faint)', marginLeft: 8 }} className="mono">
+              {item.when}
+            </span>
+          </div>
+          <div
+            style={{
+              marginTop: 6,
+              padding: '10px 12px',
+              border: '1px solid var(--line-subtle)',
+              borderRadius: 8,
+              background: 'var(--panel)',
+              fontSize: 13,
+              color: 'var(--fg-dim)',
+              lineHeight: 1.5,
+            }}
+          >
+            {item.body}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // create / brief / assign — compact inline event
   return (
     <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--fg-mute)', padding: '2px 0' }}>
       <Avatar user={u} size="sm" />

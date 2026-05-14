@@ -8,10 +8,9 @@ import { StatusChip } from '@/components/ui/StatusChip';
 type Props = {
   card: MockCard;
   onBack: () => void;
-  onPlay: () => void;
 };
 
-export function MobileCard({ card, onBack, onPlay }: Props) {
+export function MobileCard({ card, onBack }: Props) {
   const client = CLIENT_BY_ID[card.client];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingBottom: 80 }}>
@@ -44,51 +43,12 @@ export function MobileCard({ card, onBack, onPlay }: Props) {
         <h1 style={{ fontSize: 22, fontWeight: 500, letterSpacing: '-0.015em', margin: '4px 0 12px' }}>
           {card.title}
         </h1>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 18 }}>
           <StatusChip status={card.column} />
           <span className="mono" style={{ color: 'var(--fg-mute)', fontSize: 11 }}>
             Due {card.due}
           </span>
         </div>
-
-        <button
-          type="button"
-          onClick={onPlay}
-          style={{
-            padding: 12,
-            borderRadius: 10,
-            background: 'var(--record-soft)',
-            border: '1px solid rgba(255,58,58,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            cursor: 'pointer',
-            marginBottom: 18,
-            width: '100%',
-            textAlign: 'left',
-          }}
-        >
-          <span
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              background: 'var(--record)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flex: 'none',
-            }}
-          >
-            <Icon name="play" size={14} color="#fff" />
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, color: 'var(--fg)', fontWeight: 500 }}>New feedback from Maya · 1:42</div>
-            <div style={{ fontSize: 11, color: 'var(--fg-dim)', marginTop: 2 }}>
-              3 markers on v2 · &ldquo;Almost there — just the closing CTA&rdquo;
-            </div>
-          </div>
-        </button>
 
         <div className="section-label">Brief</div>
         <div style={{ fontSize: 13, color: 'var(--fg-dim)', lineHeight: 1.55, marginBottom: 18 }}>

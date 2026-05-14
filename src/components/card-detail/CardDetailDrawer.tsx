@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { StatusChip } from '@/components/ui/StatusChip';
-import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
 import { useUIState } from '@/components/ui-state';
 import { ThreadView } from './ThreadView';
 import { BriefView } from './BriefView';
@@ -19,7 +18,6 @@ type Tab = 'thread' | 'brief' | 'files' | 'activity';
 type Props = {
   card: MockCard;
   onClose: () => void;
-  onOpenReview: () => void;
 };
 
 function SidebarRow({ label, children }: { label: string; children: ReactNode }) {
@@ -31,7 +29,7 @@ function SidebarRow({ label, children }: { label: string; children: ReactNode })
   );
 }
 
-export function CardDetailDrawer({ card, onClose, onOpenReview }: Props) {
+export function CardDetailDrawer({ card, onClose }: Props) {
   const [tab, setTab] = useState<Tab>('thread');
   const { attachments } = useUIState();
   const client = CLIENT_BY_ID[card.client];
@@ -40,7 +38,6 @@ export function CardDetailDrawer({ card, onClose, onOpenReview }: Props) {
   const thread = isFocus ? FOCUS_THREAD : [];
   const files = isFocus ? FOCUS_FILES : { raw: [], wips: [], refs: [] };
   const activity = isFocus ? FOCUS_ACTIVITY : [];
-  const latestWip = files.wips[0];
   const fileCount =
     files.raw.length + files.wips.length + files.refs.length + (attachments[card.id]?.length ?? 0);
 
@@ -99,40 +96,6 @@ export function CardDetailDrawer({ card, onClose, onOpenReview }: Props) {
             </span>
           </div>
 
-          {latestWip && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '12px 14px',
-                background: 'var(--panel)',
-                border: '1px solid var(--line-subtle)',
-                borderRadius: 10,
-                marginBottom: 24,
-              }}
-            >
-              <VideoPlaceholder width={36} height={64} style={{ borderRadius: 4 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, color: 'var(--fg)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  Current WIP
-                  <span className="mono" style={{ color: 'var(--fg-mute)', fontSize: 11 }}>
-                    {latestWip.version}
-                  </span>
-                </div>
-                <div className="mono" style={{ color: 'var(--fg-faint)', fontSize: 11, marginTop: 2 }}>
-                  {latestWip.name} · {latestWip.size} · {latestWip.dur} · {latestWip.when}
-                </div>
-              </div>
-              <Button variant="record" icon="record" onClick={onOpenReview}>
-                Review &amp; record
-              </Button>
-              <Button icon="play" onClick={onOpenReview}>
-                Watch
-              </Button>
-            </div>
-          )}
-
           <div className="tabs" style={{ marginBottom: 16 }}>
             {(['thread', 'brief', 'files', 'activity'] as const).map((t) => (
               <button
@@ -149,9 +112,7 @@ export function CardDetailDrawer({ card, onClose, onOpenReview }: Props) {
             ))}
           </div>
 
-          {tab === 'thread' && (
-            <ThreadView thread={thread} onOpenReview={onOpenReview} onAttach={() => setTab('files')} />
-          )}
+          {tab === 'thread' && <ThreadView thread={thread} onAttach={() => setTab('files')} />}
           {tab === 'brief' && <BriefView card={card} />}
           {tab === 'files' && <FilesView cardId={card.id} files={files} />}
           {tab === 'activity' && <ActivityView activity={activity} />}

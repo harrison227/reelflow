@@ -10,7 +10,7 @@ type Filter = 'all' | 'unread' | 'mentions';
 
 const ICON_MAP: Record<NotificationKind, IconName> = {
   wip: 'upload',
-  feedback: 'record',
+  feedback: 'comment',
   mention: 'at',
   assign: 'plus',
   deadline: 'clock',
@@ -72,12 +72,12 @@ export function NotificationsView() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: n.kind === 'feedback' ? 'var(--record)' : 'var(--fg-dim)',
-                background: n.kind === 'feedback' ? 'var(--record-soft)' : 'var(--panel)',
+                color: 'var(--fg-dim)',
+                background: 'var(--panel)',
                 border: '1px solid var(--line-subtle)',
               }}
             >
-              <Icon name={ICON_MAP[n.kind]} size={13} color={n.kind === 'feedback' ? 'var(--record)' : 'currentColor'} />
+              <Icon name={ICON_MAP[n.kind]} size={13} color="currentColor" />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--fg)' }}>

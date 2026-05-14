@@ -88,9 +88,6 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const items = useMemo<Item[]>(() => {
     const ql = q.toLowerCase();
     const out: Item[] = [];
-    if ('record feedback'.includes(ql) || ql === '') {
-      out.push({ kind: 'action', group: 'Actions', icon: 'record', label: 'Record feedback on current WIP', kbd: 'R', fn: () => router.push('/') });
-    }
     if ('new card'.includes(ql) || ql === '') {
       out.push({ kind: 'action', group: 'Actions', icon: 'plus', label: 'New card…', kbd: 'C', fn: () => router.push('/') });
     }

@@ -52,12 +52,9 @@ type UIState = {
   addAttachment: (cardId: string, input: Omit<Attachment, 'id' | 'addedAt'>) => void;
   removeAttachment: (cardId: string, attachmentId: string) => void;
   openCardId: string | null;
-  reviewCardId: string | null;
   paletteOpen: boolean;
   openCard: MockCard | null;
-  reviewCard: MockCard | null;
   setOpenCardId: (id: string | null) => void;
-  setReviewCardId: (id: string | null) => void;
   setPaletteOpen: (open: boolean) => void;
   togglePalette: () => void;
 };
@@ -85,7 +82,6 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
   const [attachments, setAttachments] = useState<AttachmentMap>({});
   const [newCardColumn, setNewCardColumn] = useState<ColumnId | null>(null);
   const [openCardId, setOpenCardIdState] = useState<string | null>(null);
-  const [reviewCardId, setReviewCardIdState] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpenState] = useState(false);
 
   // Restore the saved board + attachments from a previous session after mount.
@@ -176,7 +172,6 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
   const openNewCard = useCallback((column: ColumnId = 'brief') => setNewCardColumn(column), []);
   const closeNewCard = useCallback(() => setNewCardColumn(null), []);
   const setOpenCardId = useCallback((id: string | null) => setOpenCardIdState(id), []);
-  const setReviewCardId = useCallback((id: string | null) => setReviewCardIdState(id), []);
   const setPaletteOpen = useCallback((open: boolean) => setPaletteOpenState(open), []);
   const togglePalette = useCallback(() => setPaletteOpenState((o) => !o), []);
 
@@ -190,16 +185,14 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
       if (e.key === 'Escape') {
         if (paletteOpen) setPaletteOpenState(false);
         else if (newCardColumn) setNewCardColumn(null);
-        else if (reviewCardId) setReviewCardIdState(null);
         else if (openCardId) setOpenCardIdState(null);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [paletteOpen, newCardColumn, reviewCardId, openCardId, togglePalette]);
+  }, [paletteOpen, newCardColumn, openCardId, togglePalette]);
 
   const openCard = useMemo(() => cards.find((c) => c.id === openCardId) ?? null, [cards, openCardId]);
-  const reviewCard = useMemo(() => cards.find((c) => c.id === reviewCardId) ?? null, [cards, reviewCardId]);
 
   const value: UIState = {
     cards,
@@ -212,12 +205,9 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
     addAttachment,
     removeAttachment,
     openCardId,
-    reviewCardId,
     paletteOpen,
     openCard,
-    reviewCard,
     setOpenCardId,
-    setReviewCardId,
     setPaletteOpen,
     togglePalette,
   };

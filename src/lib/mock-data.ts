@@ -159,13 +159,6 @@ export const CARDS: MockCard[] = [
 
 export const FOCUS_CARD_ID = 'V-241';
 
-export type LoomFeedback = {
-  duration: string;
-  frames: number;
-  summary: string;
-  points: string[];
-};
-
 export type ThreadFileRef = {
   name: string;
   size: string;
@@ -178,10 +171,9 @@ export type ThreadFile = ThreadFileRef & {
 };
 
 export type ThreadItem =
-  | { id: string; kind: 'create' | 'brief' | 'assign'; who: UserId; when: string; body: string }
+  | { id: string; kind: 'create' | 'brief' | 'assign' | 'note'; who: UserId; when: string; body: string }
   | { id: string; kind: 'upload'; who: UserId; when: string; body: string; files: ThreadFileRef[] }
-  | { id: string; kind: 'wip'; who: UserId; when: string; body: string; version: string; file: ThreadFile }
-  | { id: string; kind: 'feedback'; who: UserId; when: string; body: string; version: string; loom: LoomFeedback };
+  | { id: string; kind: 'wip'; who: UserId; when: string; body: string; version: string; file: ThreadFile };
 
 export const FOCUS_THREAD: ThreadItem[] = [
   { id: 't1', kind: 'create', who: 'sam', when: 'May 12 · 9:24', body: 'Created card and pulled raw from shoot drive.' },
@@ -201,24 +193,16 @@ export const FOCUS_THREAD: ThreadItem[] = [
     file: { name: 'HAYNES_REEL_v1.mp4', size: '184 MB', dur: '0:41', uploader: 'jules', when: 'May 13 · 15:02' },
   },
   {
-    id: 't6', kind: 'feedback', who: 'maya', when: 'May 13 · 18:47', body: 'Recorded feedback over v1.', version: 'v1',
-    loom: {
-      duration: '2:18', frames: 9,
-      summary: 'Tighter cold open + lower 3rds.',
-      points: ['Drop the first 0.6s', "Lower-third Mike's name on first cut", 'Music dips during the surprise beat', 'End card 1 frame earlier'],
-    },
+    id: 't6', kind: 'note', who: 'maya', when: 'May 13 · 18:47',
+    body: 'Feedback on v1 — tighter cold open, lower-third Mike’s name on the first cut, music dips during the surprise beat, end card a frame earlier.',
   },
   {
     id: 't7', kind: 'wip', who: 'jules', when: 'May 14 · 11:09', body: 'WIP v2 uploaded', version: 'v2',
     file: { name: 'HAYNES_REEL_v2.mp4', size: '176 MB', dur: '0:42', uploader: 'jules', when: 'May 14 · 11:09' },
   },
   {
-    id: 't8', kind: 'feedback', who: 'maya', when: 'May 14 · 14:30', body: 'Recorded feedback over v2.', version: 'v2',
-    loom: {
-      duration: '1:42', frames: 6,
-      summary: 'Almost there — just the closing CTA.',
-      points: ['CTA card needs 4 more frames', 'Audio fade is a hair too fast', 'Color: lift shadows on the close-up'],
-    },
+    id: 't8', kind: 'note', who: 'maya', when: 'May 14 · 14:30',
+    body: 'Feedback on v2 — almost there, just the closing CTA: CTA card needs 4 more frames, audio fade a hair too fast, lift shadows on the close-up.',
   },
   {
     id: 't9', kind: 'wip', who: 'jules', when: 'May 15 · 09:51', body: 'WIP v3 uploaded', version: 'v3',
@@ -274,7 +258,7 @@ export type MockNotification = {
 
 export const NOTIFICATIONS: MockNotification[] = [
   { id: 'n1', kind: 'wip', who: 'jules', when: '14m ago', card: 'V-241', title: 'Haynes Reel — testimonial cut', body: 'uploaded WIP v3', unread: true },
-  { id: 'n2', kind: 'feedback', who: 'maya', when: '3h ago', card: 'V-244', title: 'Lee vid 2 — fee structure breakdown', body: 'recorded 1:21 of feedback on v2', unread: true },
+  { id: 'n2', kind: 'feedback', who: 'maya', when: '3h ago', card: 'V-244', title: 'Lee vid 2 — fee structure breakdown', body: 'left feedback on v2', unread: true },
   { id: 'n3', kind: 'mention', who: 'sam', when: '4h ago', card: 'V-240', title: '5512 Oak — open house promo', body: 'mentioned you: "@maya raw is on the drive, ready to assign"', unread: true },
   { id: 'n4', kind: 'assign', who: 'sam', when: 'Yesterday', card: 'V-246', title: 'DUI lead magnet v2', body: 'created card — brief draft ready for review', unread: false },
   { id: 'n5', kind: 'deadline', who: null, when: 'Yesterday', card: 'V-244', title: 'Lee vid 2', body: 'due in 2 days', unread: false },
@@ -290,9 +274,9 @@ export type ActivityEntry = {
 
 export const FOCUS_ACTIVITY: ActivityEntry[] = [
   { who: 'jules', when: '09:51', what: 'uploaded HAYNES_REEL_v3.mp4 (178 MB)' },
-  { who: 'maya', when: 'Yesterday 14:30', what: 'recorded feedback (1:42) on v2' },
+  { who: 'maya', when: 'Yesterday 14:30', what: 'left feedback on v2' },
   { who: 'jules', when: 'Yesterday 11:09', what: 'uploaded HAYNES_REEL_v2.mp4 (176 MB)' },
-  { who: 'maya', when: 'May 13 18:47', what: 'recorded feedback (2:18) on v1' },
+  { who: 'maya', when: 'May 13 18:47', what: 'left feedback on v1' },
   { who: 'jules', when: 'May 13 15:02', what: 'uploaded HAYNES_REEL_v1.mp4 (184 MB)' },
   { who: 'sam', when: 'May 12 10:18', what: 'assigned to Jules · due May 17' },
   { who: 'sam', when: 'May 12 10:14', what: 'uploaded 4 raw files (9.4 GB)' },

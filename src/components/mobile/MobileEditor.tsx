@@ -4,9 +4,8 @@ import { useState } from 'react';
 import { CARDS, type MockCard } from '@/lib/mock-data';
 import { MobileQueue } from './MobileQueue';
 import { MobileCard } from './MobileCard';
-import { MobilePlayback } from './MobilePlayback';
 
-type View = 'queue' | 'card' | 'playback';
+type View = 'queue' | 'card';
 
 const FALLBACK = CARDS.find((c) => c.id === 'V-241') ?? CARDS[0]!;
 
@@ -33,10 +32,7 @@ export function MobileEditor() {
           }}
         />
       )}
-      {view === 'card' && (
-        <MobileCard card={card} onBack={() => setView('queue')} onPlay={() => setView('playback')} />
-      )}
-      {view === 'playback' && <MobilePlayback card={card} onBack={() => setView('card')} />}
+      {view === 'card' && <MobileCard card={card} onBack={() => setView('queue')} />}
     </div>
   );
 }

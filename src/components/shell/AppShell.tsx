@@ -5,13 +5,11 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { UIStateProvider, useUIState } from '@/components/ui-state';
 import { CardDetailDrawer } from '@/components/card-detail/CardDetailDrawer';
-import { WIPReview } from '@/components/review/WIPReview';
 import { CommandPalette } from '@/components/views/CommandPalette';
 import { NewCardModal } from '@/components/board/NewCardModal';
 
 function GlobalOverlays() {
-  const { openCard, reviewCard, paletteOpen, newCardColumn, setOpenCardId, setReviewCardId, setPaletteOpen } =
-    useUIState();
+  const { openCard, paletteOpen, newCardColumn, setOpenCardId, setPaletteOpen } = useUIState();
 
   return (
     <>
@@ -21,14 +19,9 @@ function GlobalOverlays() {
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 80 }}
             onClick={() => setOpenCardId(null)}
           />
-          <CardDetailDrawer
-            card={openCard}
-            onClose={() => setOpenCardId(null)}
-            onOpenReview={() => setReviewCardId(openCard.id)}
-          />
+          <CardDetailDrawer card={openCard} onClose={() => setOpenCardId(null)} />
         </>
       )}
-      {reviewCard && <WIPReview card={reviewCard} onClose={() => setReviewCardId(null)} />}
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
       {newCardColumn && <NewCardModal />}
     </>
