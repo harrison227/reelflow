@@ -34,6 +34,7 @@ export type Attachment = {
   provider?: LinkProvider;
   url?: string;
   embedUrl?: string | null;
+  thumbnailUrl?: string | null;
   // file attachments
   fileName?: string;
   fileSize?: number;

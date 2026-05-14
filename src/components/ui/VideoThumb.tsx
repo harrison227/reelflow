@@ -1,4 +1,6 @@
-import type { CSSProperties } from 'react';
+'use client';
+
+import { useEffect, useState, type CSSProperties } from 'react';
 
 type Props = {
   seed: string;
@@ -7,13 +9,15 @@ type Props = {
   height?: number | string;
   format?: string;
   rounded?: number;
+  thumbnailUrl?: string | null;
   style?: CSSProperties;
 };
 
-// A stand-in "cover frame" for a video — a client-tinted gradient with a
-// subtle frame-grab texture and a play affordance. Deterministic per seed
-// so each card keeps a stable look. Swap for a real poster frame once
-// uploads generate thumbnails.
+// A "cover frame" for a video. When the card has an attached link that
+// exposes a poster (Google Drive file, YouTube), that real frame grab is
+// shown; otherwise it falls back to a client-tinted gradient placeholder.
+// If the poster fails to load (e.g. a Drive file that isn't shared) it
+// falls back to the gradient too.
 export function VideoThumb({
   seed,
   clientColor = 'var(--fg-mute)',
@@ -21,11 +25,17 @@ export function VideoThumb({
   height,
   format,
   rounded = 4,
+  thumbnailUrl,
   style,
 }: Props) {
   const hash = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const angle = 115 + (hash % 80);
   const shift = 14 + (hash % 18);
+
+  const [imgFailed, setImgFailed] = useState(false);
+  // Reset the failure flag if the thumbnail URL changes (e.g. a new attachment).
+  useEffect(() => setImgFailed(false), [thumbnailUrl]);
+  const showImage = Boolean(thumbnailUrl) && !imgFailed;
 
   return (
     <div
@@ -37,19 +47,32 @@ export function VideoThumb({
         overflow: 'hidden',
         flex: 'none',
         border: '1px solid var(--line)',
-        background: `linear-gradient(${angle}deg, color-mix(in srgb, ${clientColor} ${shift + 20}%, var(--panel-2)) 0%, color-mix(in srgb, ${clientColor} 10%, var(--panel)) 68%, var(--panel) 100%)`,
+        background: showImage
+          ? 'var(--panel-2)'
+          : `linear-gradient(${angle}deg, color-mix(in srgb, ${clientColor} ${shift + 20}%, var(--panel-2)) 0%, color-mix(in srgb, ${clientColor} 10%, var(--panel)) 68%, var(--panel) 100%)`,
         ...style,
       }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 3px)',
-          opacity: 0.6,
-          pointerEvents: 'none',
-        }}
-      />
+      {showImage && thumbnailUrl && (
+        <img
+          src={thumbnailUrl}
+          alt=""
+          referrerPolicy="no-referrer"
+          onError={() => setImgFailed(true)}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      )}
+      {!showImage && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 3px)',
+            opacity: 0.6,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
       <div
         style={{
           position: 'absolute',

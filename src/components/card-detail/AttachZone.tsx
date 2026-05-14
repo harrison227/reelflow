@@ -25,6 +25,7 @@ export function AttachZone({ cardId }: { cardId: string }) {
       provider: parsed.provider,
       url: parsed.url,
       embedUrl: parsed.embedUrl,
+      thumbnailUrl: parsed.thumbnailUrl,
     });
     setError(null);
     return true;

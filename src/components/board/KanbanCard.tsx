@@ -5,6 +5,7 @@ import { CLIENT_BY_ID, USERS, type MockCard } from '@/lib/mock-data';
 import { Avatar } from '@/components/ui/Avatar';
 import { Icon } from '@/components/ui/Icon';
 import { VideoThumb } from '@/components/ui/VideoThumb';
+import { useUIState } from '@/components/ui-state';
 
 type Props = {
   card: MockCard;
@@ -15,8 +16,16 @@ type Props = {
 };
 
 export function KanbanCard({ card, onOpen, dragging, onDragStart, onDragEnd }: Props) {
+  const { attachments } = useUIState();
   const client = CLIENT_BY_ID[card.client];
   const assignee = card.assignee ? USERS[card.assignee] : null;
+
+  // The card cover auto-populates from the most recent attached link that
+  // exposes a poster frame (Google Drive file, YouTube). Falls back to the
+  // gradient placeholder when there's nothing to show.
+  const coverThumb =
+    [...(attachments[card.id] ?? [])].reverse().find((a) => a.kind === 'link' && a.thumbnailUrl)?.thumbnailUrl ??
+    null;
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData('text/plain', card.id);
@@ -34,7 +43,15 @@ export function KanbanCard({ card, onOpen, dragging, onDragStart, onDragEnd }: P
     >
       <span className="stripe" style={{ background: client?.stripe ?? '#444' }} />
       {card.unread && <span className="unread" />}
-      <VideoThumb seed={card.id} clientColor={client?.stripe} width={46} height={82} format={card.format} rounded={4} />
+      <VideoThumb
+        seed={card.id}
+        clientColor={client?.stripe}
+        width={46}
+        height={82}
+        format={card.format}
+        rounded={4}
+        thumbnailUrl={coverThumb}
+      />
       <div className="body">
         <div className="client" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span>{client?.name}</span>
