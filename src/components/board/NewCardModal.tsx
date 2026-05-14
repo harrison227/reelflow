@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties } from 'react';
 import { CLIENTS, COLUMNS, USERS, type ClientId, type ColumnId, type UserId } from '@/lib/mock-data';
+import { parseLink } from '@/lib/parse-link';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { useUIState } from '@/components/ui-state';
@@ -17,19 +18,45 @@ const fieldLabel: CSSProperties = {
 };
 
 export function NewCardModal() {
-  const { newCardColumn, closeNewCard, addCard } = useUIState();
+  const { newCardColumn, closeNewCard, addCard, addAttachment } = useUIState();
   const [title, setTitle] = useState('');
   const [client, setClient] = useState<ClientId>('ppd');
   const [column, setColumn] = useState<ColumnId>(newCardColumn ?? 'brief');
   const [assignee, setAssignee] = useState<UserId | ''>('');
   const [due, setDue] = useState('');
   const [format, setFormat] = useState('9:16');
+  const [videoLink, setVideoLink] = useState('');
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   const canSubmit = title.trim().length > 0;
 
   const submit = () => {
     if (!canSubmit) return;
-    addCard({ title: title.trim(), client, column, assignee: assignee || null, due: due.trim(), format });
+    const link = videoLink.trim();
+    // Validate the optional video link before creating anything.
+    const parsed = link ? parseLink(link) : null;
+    if (link && !parsed) {
+      setLinkError('That doesn’t look like a valid link.');
+      return;
+    }
+    const newId = addCard({
+      title: title.trim(),
+      client,
+      column,
+      assignee: assignee || null,
+      due: due.trim(),
+      format,
+    });
+    if (parsed) {
+      addAttachment(newId, {
+        kind: 'link',
+        label: parsed.label,
+        provider: parsed.provider,
+        url: parsed.url,
+        embedUrl: parsed.embedUrl,
+        thumbnailUrl: parsed.thumbnailUrl,
+      });
+    }
     closeNewCard();
   };
 
@@ -127,6 +154,23 @@ export function NewCardModal() {
             <option value="1:1">1:1 — square</option>
             <option value="16:9">16:9 — landscape</option>
           </select>
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          <label style={fieldLabel}>Video link — optional</label>
+          <input
+            className="input"
+            value={videoLink}
+            onChange={(e) => {
+              setVideoLink(e.target.value);
+              if (linkError) setLinkError(null);
+            }}
+            placeholder="Paste a Google Drive or Loom link"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') submit();
+            }}
+          />
+          {linkError && <div style={{ marginTop: 6, fontSize: 11, color: 'var(--record)' }}>{linkError}</div>}
         </div>
 
         <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>

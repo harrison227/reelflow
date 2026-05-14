@@ -1,19 +1,16 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
-import { CLIENT_BY_ID, FOCUS_ACTIVITY, FOCUS_CARD_ID, FOCUS_FILES, FOCUS_THREAD, USERS, type MockCard } from '@/lib/mock-data';
+import { useRef, type ReactNode } from 'react';
+import { CLIENT_BY_ID, FOCUS_CARD_ID, FOCUS_FILES, FOCUS_THREAD, USERS, type MockCard } from '@/lib/mock-data';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { StatusChip } from '@/components/ui/StatusChip';
-import { useUIState } from '@/components/ui-state';
+import { CardVideo } from './CardVideo';
 import { ThreadView } from './ThreadView';
 import { BriefView } from './BriefView';
 import { FilesView } from './FilesView';
-import { ActivityView } from './ActivityView';
-
-type Tab = 'thread' | 'brief' | 'files' | 'activity';
 
 type Props = {
   card: MockCard;
@@ -29,17 +26,29 @@ function SidebarRow({ label, children }: { label: string; children: ReactNode })
   );
 }
 
+function Section({ children, divided = true }: { children: ReactNode; divided?: boolean }) {
+  return (
+    <div
+      style={{
+        marginTop: divided ? 24 : 0,
+        paddingTop: divided ? 24 : 0,
+        borderTop: divided ? '1px solid var(--line-subtle)' : 'none',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function CardDetailDrawer({ card, onClose }: Props) {
-  const [tab, setTab] = useState<Tab>('thread');
-  const { attachments } = useUIState();
   const client = CLIENT_BY_ID[card.client];
   const assignee = card.assignee ? USERS[card.assignee] : null;
   const isFocus = card.id === FOCUS_CARD_ID;
   const thread = isFocus ? FOCUS_THREAD : [];
   const files = isFocus ? FOCUS_FILES : { raw: [], wips: [], refs: [] };
-  const activity = isFocus ? FOCUS_ACTIVITY : [];
-  const fileCount =
-    files.raw.length + files.wips.length + files.refs.length + (attachments[card.id]?.length ?? 0);
+  const filesRef = useRef<HTMLDivElement>(null);
+
+  const scrollToFiles = () => filesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <div className="drawer" onClick={(e) => e.stopPropagation()}>
@@ -91,31 +100,27 @@ export function CardDetailDrawer({ card, onClose }: Props) {
             <span style={{ color: 'var(--fg-faint)' }}>·</span>
             <span>Due {card.due}</span>
             <span style={{ color: 'var(--fg-faint)' }}>·</span>
-            <span>
-              {card.length} · {card.format}
-            </span>
+            <span>{card.format}</span>
           </div>
 
-          <div className="tabs" style={{ marginBottom: 16 }}>
-            {(['thread', 'brief', 'files', 'activity'] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={`tab ${tab === t ? 'active' : ''}`}
-                onClick={() => setTab(t)}
-              >
-                {t === 'thread' && 'Revision thread'}
-                {t === 'brief' && 'Brief'}
-                {t === 'files' && `Files (${fileCount})`}
-                {t === 'activity' && 'Activity'}
-              </button>
-            ))}
-          </div>
+          {/* The video is the first thing — plays inline if a link is attached. */}
+          <CardVideo card={card} onAttach={scrollToFiles} />
 
-          {tab === 'thread' && <ThreadView thread={thread} onAttach={() => setTab('files')} />}
-          {tab === 'brief' && <BriefView card={card} />}
-          {tab === 'files' && <FilesView cardId={card.id} files={files} />}
-          {tab === 'activity' && <ActivityView activity={activity} />}
+          <Section>
+            <BriefView card={card} />
+          </Section>
+
+          <Section>
+            <div ref={filesRef}>
+              <SectionLabel>Files &amp; attachments</SectionLabel>
+              <FilesView cardId={card.id} files={files} />
+            </div>
+          </Section>
+
+          <Section>
+            <SectionLabel>Activity</SectionLabel>
+            <ThreadView thread={thread} onAttach={scrollToFiles} />
+          </Section>
         </div>
 
         <div style={{ width: 240, flex: 'none', borderLeft: '1px solid var(--line-subtle)', padding: 16, overflowY: 'auto' }}>
@@ -145,9 +150,6 @@ export function CardDetailDrawer({ card, onClose }: Props) {
           <SidebarRow label="Due">
             <span className="mono">{card.due}</span>
           </SidebarRow>
-          <SidebarRow label="Length">
-            <span className="mono">{card.length}</span>
-          </SidebarRow>
           <SidebarRow label="Format">
             <span className="mono">{card.format}</span>
           </SidebarRow>
@@ -157,23 +159,27 @@ export function CardDetailDrawer({ card, onClose }: Props) {
 
           <div style={{ height: 14 }} />
           <SectionLabel>Deliverables</SectionLabel>
-          <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: 12, color: 'var(--fg-dim)' }}>
-            {card.deliverables.map((d, i) => (
-              <li key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '4px 0' }}>
-                <span
-                  style={{
-                    width: 4,
-                    height: 4,
-                    borderRadius: 2,
-                    background: 'var(--fg-faint)',
-                    marginTop: 7,
-                    flex: 'none',
-                  }}
-                />
-                <span>{d}</span>
-              </li>
-            ))}
-          </ul>
+          {card.deliverables.length > 0 ? (
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: 12, color: 'var(--fg-dim)' }}>
+              {card.deliverables.map((d, i) => (
+                <li key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '4px 0' }}>
+                  <span
+                    style={{
+                      width: 4,
+                      height: 4,
+                      borderRadius: 2,
+                      background: 'var(--fg-faint)',
+                      marginTop: 7,
+                      flex: 'none',
+                    }}
+                  />
+                  <span>{d}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div style={{ fontSize: 12, color: 'var(--fg-faint)' }}>None set</div>
+          )}
 
           {card.column === 'approved' && (
             <>

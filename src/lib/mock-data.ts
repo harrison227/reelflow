@@ -266,21 +266,4 @@ export const NOTIFICATIONS: MockNotification[] = [
   { id: 'n7', kind: 'delivered', who: 'sam', when: '3d ago', card: 'V-237', title: 'Q3 testimonial — Janet R.', body: 'sent preview link to Vanguard', unread: false },
 ];
 
-export type ActivityEntry = {
-  who: UserId;
-  when: string;
-  what: string;
-};
-
-export const FOCUS_ACTIVITY: ActivityEntry[] = [
-  { who: 'jules', when: '09:51', what: 'uploaded HAYNES_REEL_v3.mp4 (178 MB)' },
-  { who: 'maya', when: 'Yesterday 14:30', what: 'left feedback on v2' },
-  { who: 'jules', when: 'Yesterday 11:09', what: 'uploaded HAYNES_REEL_v2.mp4 (176 MB)' },
-  { who: 'maya', when: 'May 13 18:47', what: 'left feedback on v1' },
-  { who: 'jules', when: 'May 13 15:02', what: 'uploaded HAYNES_REEL_v1.mp4 (184 MB)' },
-  { who: 'sam', when: 'May 12 10:18', what: 'assigned to Jules · due May 17' },
-  { who: 'sam', when: 'May 12 10:14', what: 'uploaded 4 raw files (9.4 GB)' },
-  { who: 'sam', when: 'May 12 09:24', what: 'created card' },
-];
-
 export const ME: MockUser = USERS.maya;

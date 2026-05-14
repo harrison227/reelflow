@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -45,7 +46,7 @@ type AttachmentMap = Record<string, Attachment[]>;
 type UIState = {
   cards: MockCard[];
   moveCard: (cardId: string, toColumn: ColumnId) => void;
-  addCard: (input: NewCardInput) => void;
+  addCard: (input: NewCardInput) => string;
   newCardColumn: ColumnId | null;
   openNewCard: (column?: ColumnId) => void;
   closeNewCard: () => void;
@@ -85,6 +86,11 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
   const [openCardId, setOpenCardIdState] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpenState] = useState(false);
 
+  // Mirror of `cards` so addCard can compute the next id and return it
+  // synchronously (a setState updater can't return a value to the caller).
+  const cardsRef = useRef(cards);
+  cardsRef.current = cards;
+
   // Restore the saved board + attachments from a previous session after mount.
   useEffect(() => {
     try {
@@ -117,34 +123,36 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const addCard = useCallback((input: NewCardInput) => {
-    setCards((prev) => {
-      const maxNum = prev.reduce((m, c) => {
-        const n = Number.parseInt(c.id.replace(/\D/g, ''), 10);
-        return Number.isFinite(n) && n > m ? n : m;
-      }, 240);
-      const card: MockCard = {
-        id: `V-${maxNum + 1}`,
-        title: input.title,
-        client: input.client,
-        column: input.column,
-        assignee: input.assignee,
-        length: '—',
-        format: input.format,
-        due: input.due || 'TBD',
-        updated: 'just now',
-        updatedBy: 'maya',
-        unread: false,
-        versions: 0,
-        comments: 0,
-        files: 0,
-        brief: '',
-        deliverables: [],
-      };
-      const next = [...prev, card];
-      persistBoard(next);
-      return next;
-    });
+  const addCard = useCallback((input: NewCardInput): string => {
+    const prev = cardsRef.current;
+    const maxNum = prev.reduce((m, c) => {
+      const n = Number.parseInt(c.id.replace(/\D/g, ''), 10);
+      return Number.isFinite(n) && n > m ? n : m;
+    }, 240);
+    const id = `V-${maxNum + 1}`;
+    const card: MockCard = {
+      id,
+      title: input.title,
+      client: input.client,
+      column: input.column,
+      assignee: input.assignee,
+      length: '—',
+      format: input.format,
+      due: input.due || 'TBD',
+      updated: 'just now',
+      updatedBy: 'maya',
+      unread: false,
+      versions: 0,
+      comments: 0,
+      files: 0,
+      brief: '',
+      deliverables: [],
+    };
+    const next = [...prev, card];
+    cardsRef.current = next;
+    persistBoard(next);
+    setCards(next);
+    return id;
   }, []);
 
   const addAttachment = useCallback((cardId: string, input: Omit<Attachment, 'id' | 'addedAt'>) => {

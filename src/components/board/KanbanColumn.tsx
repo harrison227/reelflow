@@ -60,9 +60,17 @@ export function KanbanColumn({
         className={`column-cards${isOver && draggingId ? ' drop-over' : ''}`}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
+        // Clicking the empty space of a column (not a card) opens the
+        // new-card box, pre-set to this column.
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onAddCard();
+        }}
+        title="Click an empty area to add a card"
       >
         {visible.length === 0 ? (
-          <div className="column-empty">— empty —</div>
+          <button type="button" className="column-empty" onClick={onAddCard}>
+            + Add a card
+          </button>
         ) : (
           visible.map((c) => (
             <KanbanCard
