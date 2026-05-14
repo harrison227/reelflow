@@ -7,7 +7,6 @@ services:
     buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm build
     startCommand: pnpm start
     autoDeploy: true
-    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
@@ -18,7 +17,7 @@ services:
       - key: AUTH_SECRET
         generateValue: true
       - key: AUTH_URL
-        value: https://reelflow.onrender.com
+        value: https://reelflow-8uok.onrender.com
       - key: EMAIL_FROM
         value: noreply@reelflow.studio
       - key: B2_ENDPOINT
