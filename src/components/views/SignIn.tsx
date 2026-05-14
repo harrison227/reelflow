@@ -1,9 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useActionState, useState, type ReactNode } from 'react';
+import { signInAction, signUpAction, type AuthFormState } from '@/app/auth-actions';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
+
+const initialState: AuthFormState = { error: null };
+
+function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <label
+      style={{
+        display: 'block',
+        fontSize: 11,
+        color: 'var(--fg-mute)',
+        fontFamily: 'var(--mono)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        marginBottom: 6,
+      }}
+    >
+      {children}
+    </label>
+  );
+}
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -17,74 +37,92 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export function SignIn() {
-  const router = useRouter();
-  const [email, setEmail] = useState('maya@reelflow.studio');
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [signInState, signInFormAction, signInPending] = useActionState(signInAction, initialState);
+  const [signUpState, signUpFormAction, signUpPending] = useActionState(signUpAction, initialState);
 
-  const onSignIn = () => router.push('/');
+  const isSignup = mode === 'signup';
+  const state = isSignup ? signUpState : signInState;
+  const pending = isSignup ? signUpPending : signInPending;
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'stretch' }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
         <div style={{ width: 320 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 40 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 36 }}>
             <Icon name="logo" size={22} />
             <span style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>Reelflow</span>
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 500, letterSpacing: '-0.015em', margin: '0 0 6px' }}>Sign in</h1>
-          <div style={{ color: 'var(--fg-mute)', fontSize: 13, marginBottom: 24 }}>Continue to your queue.</div>
-
-          <label
-            style={{
-              display: 'block',
-              fontSize: 11,
-              color: 'var(--fg-mute)',
-              fontFamily: 'var(--mono)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              marginBottom: 6,
-            }}
-          >
-            Email
-          </label>
-          <input
-            className="input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@studio.com"
-          />
-          <Button
-            variant="primary"
-            size="lg"
-            style={{ width: '100%', justifyContent: 'center', marginTop: 12 }}
-            onClick={onSignIn}
-          >
-            Continue <Icon name="arrow-r" size={14} />
-          </Button>
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              margin: '20px 0',
-              color: 'var(--fg-faint)',
-              fontSize: 11,
-            }}
-          >
-            <div style={{ flex: 1, height: 1, background: 'var(--line-subtle)' }} />
-            <span>or</span>
-            <div style={{ flex: 1, height: 1, background: 'var(--line-subtle)' }} />
+          <h1 style={{ fontSize: 24, fontWeight: 500, letterSpacing: '-0.015em', margin: '0 0 6px' }}>
+            {isSignup ? 'Create your account' : 'Sign in'}
+          </h1>
+          <div style={{ color: 'var(--fg-mute)', fontSize: 13, marginBottom: 22 }}>
+            {isSignup ? 'Set up your studio in a few seconds.' : 'Welcome back.'}
           </div>
 
-          <Button size="lg" style={{ width: '100%', justifyContent: 'center' }} onClick={onSignIn}>
-            <Icon name="globe" size={14} /> Continue with Google
-          </Button>
-          <Button size="lg" style={{ width: '100%', justifyContent: 'center', marginTop: 8 }} onClick={onSignIn}>
-            <Icon name="link" size={14} /> Magic link
-          </Button>
+          {/* key={mode} resets the fields when toggling between sign in / sign up */}
+          <form action={isSignup ? signUpFormAction : signInFormAction} key={mode}>
+            {isSignup && (
+              <div style={{ marginBottom: 12 }}>
+                <FieldLabel>Name</FieldLabel>
+                <input
+                  className="input"
+                  name="name"
+                  autoComplete="name"
+                  placeholder="Harrison Macourt"
+                  required
+                />
+              </div>
+            )}
+            <div style={{ marginBottom: 12 }}>
+              <FieldLabel>Email</FieldLabel>
+              <input
+                className="input"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@studio.com"
+                required
+              />
+            </div>
+            <div>
+              <FieldLabel>Password</FieldLabel>
+              <input
+                className="input"
+                name="password"
+                type="password"
+                autoComplete={isSignup ? 'new-password' : 'current-password'}
+                placeholder={isSignup ? 'At least 8 characters' : '••••••••'}
+                required
+                minLength={isSignup ? 8 : undefined}
+              />
+            </div>
 
-          <div style={{ marginTop: 28, fontSize: 11, color: 'var(--fg-faint)' }}>
-            Invited by your studio admin? Use the link they sent.
+            {state.error && (
+              <div style={{ marginTop: 10, fontSize: 12, color: 'var(--record)' }}>{state.error}</div>
+            )}
+
+            <Button
+              variant="primary"
+              size="lg"
+              type="submit"
+              disabled={pending}
+              style={{ width: '100%', justifyContent: 'center', marginTop: 16 }}
+            >
+              {pending ? 'One moment…' : isSignup ? 'Create account' : 'Sign in'}
+              {!pending && <Icon name="arrow-r" size={14} />}
+            </Button>
+          </form>
+
+          <div style={{ marginTop: 18, fontSize: 12, color: 'var(--fg-mute)' }}>
+            {isSignup ? 'Already have an account? ' : 'New here? '}
+            <button
+              type="button"
+              onClick={() => setMode(isSignup ? 'signin' : 'signup')}
+              style={{ color: 'var(--fg)', textDecoration: 'underline', textUnderlineOffset: 2 }}
+            >
+              {isSignup ? 'Sign in' : 'Create an account'}
+            </button>
           </div>
         </div>
       </div>
@@ -121,8 +159,7 @@ export function SignIn() {
               margin: '8px 0 0',
             }}
           >
-            Brief, raw, edit, review, deliver — every step on one card. Loom feedback in the same place as the version
-            it&rsquo;s about.
+            Brief, raw, edit, review, deliver — every step on one card, with the video right where the work happens.
           </p>
         </div>
         <div style={{ marginTop: 40, display: 'flex', gap: 28, fontSize: 11, color: 'var(--fg-mute)' }}>

@@ -1,20 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 import { useUIState } from '@/components/ui-state';
 import { Icon } from '@/components/ui/Icon';
 import { Kbd } from '@/components/ui/Kbd';
 import { NOTIFICATIONS } from '@/lib/mock-data';
 import { ThemeToggle } from './ThemeToggle';
+import { Crumb } from './Crumb';
 
-export function Topbar({ crumb }: { crumb: ReactNode }) {
+export function Topbar() {
   const { setPaletteOpen } = useUIState();
   const unread = NOTIFICATIONS.filter((n) => n.unread).length;
 
   return (
     <div className="topbar">
-      <div className="crumb">{crumb}</div>
+      <div className="crumb">
+        <Suspense fallback={null}>
+          <Crumb />
+        </Suspense>
+      </div>
       <span className="spacer" />
       <button type="button" className="search-pill" onClick={() => setPaletteOpen(true)}>
         <Icon name="search" size={13} />

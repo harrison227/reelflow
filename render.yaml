@@ -1,3 +1,10 @@
+databases:
+  - name: reelflow-db
+    plan: free
+    region: oregon
+    databaseName: reelflow
+    user: reelflow
+
 services:
   - type: web
     name: reelflow
@@ -5,6 +12,7 @@ services:
     plan: free
     region: oregon
     buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm build
+    preDeployCommand: pnpm db:migrate
     startCommand: pnpm start
     autoDeploy: true
     envVars:
@@ -13,13 +21,13 @@ services:
       - key: NODE_VERSION
         value: 20
       - key: DATABASE_URL
-        value: postgres://placeholder:placeholder@localhost:5432/placeholder
+        fromDatabase:
+          name: reelflow-db
+          property: connectionString
       - key: AUTH_SECRET
         generateValue: true
       - key: AUTH_URL
         value: https://reelflow-8uok.onrender.com
-      - key: EMAIL_FROM
-        value: noreply@reelflow.studio
       - key: B2_ENDPOINT
         value: https://s3.us-west-002.backblazeb2.com
       - key: B2_REGION
@@ -30,7 +38,5 @@ services:
         value: placeholder
       - key: B2_SECRET_ACCESS_KEY
         value: placeholder
-      - key: ALLOWED_EMAILS
-        value: ""
       - key: LOG_LEVEL
         value: warn

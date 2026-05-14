@@ -1,55 +1,45 @@
 import NextAuth from 'next-auth';
-import Resend from 'next-auth/providers/resend';
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { eq } from 'drizzle-orm';
-import { db } from '../db';
-import { accounts, sessions, users, verificationTokens } from '../db/schema';
-import { allowedEmails, env } from '../env';
-import { logger } from '../logger';
+import Credentials from 'next-auth/providers/credentials';
+import { findUserByEmail } from './users';
+import { verifyPassword } from './password';
 import type { Role } from './permissions';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
+  session: { strategy: 'jwt' },
+  pages: { signIn: '/signin' },
   providers: [
-    Resend({
-      apiKey: env.RESEND_API_KEY ?? '',
-      from: env.EMAIL_FROM,
+    Credentials({
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      authorize: async (credentials) => {
+        const email = typeof credentials?.email === 'string' ? credentials.email.trim().toLowerCase() : '';
+        const password = typeof credentials?.password === 'string' ? credentials.password : '';
+        if (!email || !password) return null;
+
+        const user = await findUserByEmail(email);
+        if (!user || !user.passwordHash) return null;
+
+        const ok = await verifyPassword(password, user.passwordHash);
+        if (!ok) return null;
+
+        return { id: user.id, email: user.email, name: user.name, role: user.role };
+      },
     }),
   ],
-  session: { strategy: 'database' },
   callbacks: {
-    async signIn({ user }) {
-      const email = user.email?.toLowerCase();
-      if (!email) return false;
-      if (allowedEmails.size === 0) {
-        if (env.NODE_ENV === 'production') {
-          logger.warn({ email }, 'Sign-in blocked: ALLOWED_EMAILS is empty in production');
-          return false;
-        }
-        return true;
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id as string;
+        token.role = (user as { role?: Role }).role ?? 'owner';
       }
-      if (!allowedEmails.has(email)) {
-        logger.warn({ email }, 'Sign-in blocked: email not on allowlist');
-        return false;
-      }
-      return true;
+      return token;
     },
-    async session({ session, user }) {
-      if (session.user && user.id) {
-        session.user.id = user.id;
-        const [row] = await db
-          .select({ role: users.role })
-          .from(users)
-          .where(eq(users.id, user.id))
-          .limit(1);
-        if (row) {
-          session.user.role = row.role as Role;
-        }
+    session({ session, token }) {
+      if (session.user) {
+        session.user.id = (token.id as string | undefined) ?? '';
+        session.user.role = (token.role as Role | undefined) ?? 'owner';
       }
       return session;
     },

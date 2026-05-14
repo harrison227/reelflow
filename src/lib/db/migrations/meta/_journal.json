@@ -8,6 +8,13 @@
       "when": 1778725857581,
       "tag": "0000_material_lady_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778796244703,
+      "tag": "0001_low_micromacro",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Sidebar } from './Sidebar';
+import { Sidebar, type SidebarUser } from './Sidebar';
 import { Topbar } from './Topbar';
 import { UIStateProvider, useUIState } from '@/components/ui-state';
 import { CardDetailDrawer } from '@/components/card-detail/CardDetailDrawer';
@@ -28,13 +28,13 @@ function GlobalOverlays() {
   );
 }
 
-export function AppShell({ crumb, children }: { crumb: ReactNode; children: ReactNode }) {
+export function AppShell({ user, children }: { user: SidebarUser; children: ReactNode }) {
   return (
     <UIStateProvider>
       <div className="app-shell">
-        <Sidebar />
+        <Sidebar user={user} />
         <main style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-          <Topbar crumb={crumb} />
+          <Topbar />
           <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>{children}</div>
         </main>
         <GlobalOverlays />
